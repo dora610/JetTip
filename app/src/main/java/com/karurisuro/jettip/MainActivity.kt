@@ -44,6 +44,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.karurisuro.jettip.components.InputField
 import com.karurisuro.jettip.ui.theme.JetTipTheme
 import com.karurisuro.jettip.widget.RoundIconButton
@@ -170,22 +171,30 @@ fun BillForm(modifier: Modifier = Modifier, onValueChange: (String) -> Unit = {}
             )
             if (validState) {
                 Row(
-                    modifier = Modifier.padding(3.dp),
+                    modifier = Modifier.fillMaxWidth().padding(6.dp),
                     horizontalArrangement = Arrangement.Start
                 ) {
                     Text(
                         text = "split",
-                        modifier = Modifier.align(alignment = Alignment.CenterVertically)
+                        modifier = Modifier.padding(6.dp).align(alignment = Alignment.CenterVertically),
+                        fontSize = 20.sp
                     )
                     Spacer(modifier = Modifier.width(120.dp))
                     Row(
-                        modifier = Modifier.padding(horizontal = 3.dp),
-                        horizontalArrangement = Arrangement.End
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 3.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         RoundIconButton(
                             imageVector = ImageVector.vectorResource(id = R.drawable.baseline_remove_24),
                             contentDesc = "Decrese value",
                             onClick = {}
+                        )
+                        Text(
+                            text = "2",
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
+                                .padding(start = 9.dp, end = 9.dp),
+                            fontSize = 20.sp
                         )
                         RoundIconButton(
                             imageVector = Icons.Default.Add,
