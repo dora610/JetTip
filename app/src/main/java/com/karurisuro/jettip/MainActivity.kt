@@ -31,6 +31,7 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -47,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.karurisuro.jettip.components.InputField
 import com.karurisuro.jettip.ui.theme.JetTipTheme
+import com.karurisuro.jettip.utility.changeValueWithInRange
 import com.karurisuro.jettip.widget.RoundIconButton
 
 class MainActivity : ComponentActivity() {
@@ -127,7 +129,7 @@ fun MyAppPreview() {
     MyApp {
         Column(modifier = Modifier.padding(all = 20.dp)) {
             TopHeader()
-
+            MainContent()
         }
     }
 }
@@ -142,10 +144,14 @@ fun BillForm(modifier: Modifier = Modifier, onValueChange: (String) -> Unit = {}
         totalBillState.value.trim().isEmpty()
     }
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    val splitState = remember {
+        mutableIntStateOf(5)
+    }
     OutlinedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(all = 15.dp),
+            .padding(top = 15.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
@@ -171,26 +177,35 @@ fun BillForm(modifier: Modifier = Modifier, onValueChange: (String) -> Unit = {}
             )
             if (validState) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(6.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(6.dp),
                     horizontalArrangement = Arrangement.Start
                 ) {
                     Text(
                         text = "split",
-                        modifier = Modifier.padding(6.dp).align(alignment = Alignment.CenterVertically),
+                        modifier = Modifier
+                            .padding(6.dp)
+                            .align(alignment = Alignment.CenterVertically),
                         fontSize = 20.sp
                     )
                     Spacer(modifier = Modifier.width(120.dp))
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 3.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 3.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         RoundIconButton(
                             imageVector = ImageVector.vectorResource(id = R.drawable.baseline_remove_24),
-                            contentDesc = "Decrese value",
-                            onClick = {}
+                            contentDesc = "Decrease value",
+                            onClick = {
+                                Log.d("split", "BillForm: ${splitState.intValue}")
+                                splitState.intValue = changeValueWithInRange(splitState.intValue - 1, totalBillState.value.toInt())
+                            }
                         )
                         Text(
-                            text = "2",
+                            text = "${splitState.intValue}",
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .padding(start = 9.dp, end = 9.dp),
@@ -199,7 +214,10 @@ fun BillForm(modifier: Modifier = Modifier, onValueChange: (String) -> Unit = {}
                         RoundIconButton(
                             imageVector = Icons.Default.Add,
                             contentDesc = "Increse value",
-                            onClick = {}
+                            onClick = {
+                                Log.d("split", "BillForm: ${splitState.intValue}")
+                                splitState.intValue = changeValueWithInRange(splitState.intValue + 1, totalBillState.value.toInt())
+                            }
                         )
 
                     }
