@@ -48,7 +48,7 @@ fun InputField(
         },
         singleLine = isSingleLine,
         textStyle = TextStyle(
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.secondary,
             fontSize = 18.sp
         ),
         enabled = enabled,

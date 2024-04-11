@@ -28,9 +28,12 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +51,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.karurisuro.jettip.components.InputField
 import com.karurisuro.jettip.ui.theme.JetTipTheme
+import com.karurisuro.jettip.utility.calculateTotalPerPerson
+import com.karurisuro.jettip.utility.calculateTotalTip
 import com.karurisuro.jettip.utility.changeValueWithInRange
 import com.karurisuro.jettip.widget.RoundIconButton
 
@@ -146,8 +151,22 @@ fun BillForm(modifier: Modifier = Modifier, onValueChange: (String) -> Unit = {}
     val keyboardController = LocalSoftwareKeyboardController.current
 
     val splitState = remember {
-        mutableIntStateOf(5)
+        mutableIntStateOf(1)
     }
+
+    val sliderPositionState = remember {
+        mutableFloatStateOf(0f)
+    }
+    val tipPercentage = (sliderPositionState.floatValue * 100).toInt()
+
+    val tipAmountState = remember {
+        mutableDoubleStateOf(0.0)
+    }
+
+    val totalPerPersonState = remember {
+        mutableDoubleStateOf(0.0)
+    }
+
     OutlinedCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -175,58 +194,100 @@ fun BillForm(modifier: Modifier = Modifier, onValueChange: (String) -> Unit = {}
                     keyboardController?.hide()
                 }
             )
-            if (validState) {
+//            if (validState) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(6.dp),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Text(
+                    text = "split",
+                    modifier = Modifier
+                        .padding(6.dp)
+                        .align(alignment = Alignment.CenterVertically),
+                    fontSize = 20.sp
+                )
+                Spacer(modifier = Modifier.width(120.dp))
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(6.dp),
-                    horizontalArrangement = Arrangement.Start
+                        .padding(horizontal = 3.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
+                    RoundIconButton(
+                        imageVector = ImageVector.vectorResource(id = R.drawable.baseline_remove_24),
+                        contentDesc = "Decrease value",
+                        onClick = {
+                            Log.d("btn", "BillForm: ${splitState.intValue}")
+                            splitState.intValue = changeValueWithInRange(
+                                splitState.intValue - 1,
+                                totalBillState.value.toInt()
+                            )
+                        }
+                    )
                     Text(
-                        text = "split",
+                        text = "${splitState.intValue}",
                         modifier = Modifier
-                            .padding(6.dp)
-                            .align(alignment = Alignment.CenterVertically),
+                            .align(Alignment.CenterVertically)
+                            .padding(start = 9.dp, end = 9.dp),
                         fontSize = 20.sp
                     )
-                    Spacer(modifier = Modifier.width(120.dp))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 3.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        RoundIconButton(
-                            imageVector = ImageVector.vectorResource(id = R.drawable.baseline_remove_24),
-                            contentDesc = "Decrease value",
-                            onClick = {
-                                Log.d("split", "BillForm: ${splitState.intValue}")
-                                splitState.intValue = changeValueWithInRange(splitState.intValue - 1, totalBillState.value.toInt())
-                            }
-                        )
-                        Text(
-                            text = "${splitState.intValue}",
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .padding(start = 9.dp, end = 9.dp),
-                            fontSize = 20.sp
-                        )
-                        RoundIconButton(
-                            imageVector = Icons.Default.Add,
-                            contentDesc = "Increse value",
-                            onClick = {
-                                Log.d("split", "BillForm: ${splitState.intValue}")
-                                splitState.intValue = changeValueWithInRange(splitState.intValue + 1, totalBillState.value.toInt())
-                            }
-                        )
+                    RoundIconButton(
+                        imageVector = Icons.Default.Add,
+                        contentDesc = "Increse value",
+                        onClick = {
+                            Log.d("btn", "BillForm: ${splitState.intValue}")
+                            splitState.intValue = changeValueWithInRange(
+                                splitState.intValue + 1,
+                                totalBillState.value.toInt()
+                            )
+                        }
+                    )
 
-                    }
-                }
-            } else {
-                Box {
-                    Text(text = "noting")
                 }
             }
+
+            // Tip row
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 12.dp, vertical = 12.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "tip",
+                    modifier = Modifier.align(alignment = Alignment.CenterVertically)
+                )
+                Spacer(modifier = Modifier.width(200.dp))
+                Text(text = "$${tipAmountState.doubleValue}")
+            }
+
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text = "$tipPercentage %")
+                Spacer(modifier = Modifier.height(14.dp))
+                Slider(
+                    value = sliderPositionState.floatValue,
+                    onValueChange = {
+                        sliderPositionState.floatValue = it
+                    },
+                    steps = 5,
+                    modifier = Modifier.padding(horizontal = 6.dp),
+                    onValueChangeFinished = {
+                        tipAmountState.doubleValue = calculateTotalTip(totalBillState.value, tipPercentage)
+                        totalPerPersonState.doubleValue = calculateTotalPerPerson(totalBillState.value, tipPercentage, splitState.intValue)
+                    }
+                )
+
+            }
+//            } else {
+//                Box {
+//                    Text(text = "noting")
+//                }
+//            }
         }
     }
 }
